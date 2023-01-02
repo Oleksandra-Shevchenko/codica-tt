@@ -10,7 +10,7 @@ import ThermostatAutoIcon from '@mui/icons-material/ThermostatAuto';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import WindPowerIcon from '@mui/icons-material/WindPower';
 import Divider from '@mui/material/Divider';
-import { getForecatsWeatherByCityCoordinate } from '../../api/weather';
+import { getForecastWeatherByCityCoordinate } from '../../api/weather';
 import { Forecast, ForecastResponse } from '../../types/forecast_response';
 import { ForecastCard } from '../ForecastCard';
 
@@ -40,7 +40,7 @@ export const AdditionalWeather: React.FC = () => {
         setError('');
         setLoading(true);
 
-        const cityWeather = await getForecatsWeatherByCityCoordinate(
+        const cityWeather = await getForecastWeatherByCityCoordinate(
           +lat,
           +lon,
         );
@@ -77,7 +77,7 @@ export const AdditionalWeather: React.FC = () => {
         p: 7,
       }}
     >
-      <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>
+      <Link to="/home" style={{ textDecoration: 'none', color: 'black' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ArrowBackIosIcon />
           <Typography>Back</Typography>

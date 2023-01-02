@@ -26,7 +26,7 @@ export const getWeatherByCityCoordinate = async (
   return Weather.fromJson(json);
 };
 
-export const getForecatsWeatherByCityCoordinate = async (
+export const getForecastWeatherByCityCoordinate = async (
   lat: number,
   lon: number,
 ): Promise<ForecastResponse> => {
