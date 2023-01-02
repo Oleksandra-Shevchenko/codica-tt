@@ -1,5 +1,6 @@
 {
   "name": "my-app",
+  "homepage": "https://Oleksandra-Shevchenko.github.io/codica-tt",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -16,6 +17,7 @@
     "@types/node": "^16.18.11",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
+    "gh-pages": "^4.0.0",
     "material-ui-popup-state": "^5.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -32,7 +34,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
