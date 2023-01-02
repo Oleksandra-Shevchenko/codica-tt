@@ -16,17 +16,27 @@ export interface WeatherDescription {
   icon: string;
 }
 
+export interface Wind {
+  speed: number;
+  deg: number;
+  gust: number;
+}
+
 export class Weather {
   weatherDescriptions: WeatherDescription[];
 
   tempDescription: TempDescription;
 
+  wind: Wind;
+
   constructor(
     weatherDescriptions: WeatherDescription[],
     tempDescription: TempDescription,
+    wind: Wind,
   ) {
     this.weatherDescriptions = weatherDescriptions;
     this.tempDescription = tempDescription;
+    this.wind = wind;
   }
 
   get weatherDescription(): WeatherDescription | null {
@@ -40,7 +50,8 @@ export class Weather {
   static fromJson(json: any): Weather {
     const { weather } = json;
     const { main } = json;
+    const { wind } = json;
 
-    return new Weather(weather, main);
+    return new Weather(weather, main, wind);
   }
 }

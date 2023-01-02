@@ -10,9 +10,13 @@ import ThermostatAutoIcon from '@mui/icons-material/ThermostatAuto';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import WindPowerIcon from '@mui/icons-material/WindPower';
 import Divider from '@mui/material/Divider';
-import { getForecastWeatherByCityCoordinate } from '../../api/weather';
+import {
+  getForecastWeatherByCityCoordinate,
+  getWeatherByCityCoordinate,
+} from '../../api/weather';
 import { Forecast, ForecastResponse } from '../../types/forecast_response';
 import { ForecastCard } from '../ForecastCard';
+import { Weather } from '../../types/weather';
 
 export const AdditionalWeather: React.FC = () => {
   const [todayForecast, setTodayForecast] = useState<Forecast[]>([]);
@@ -25,16 +29,32 @@ export const AdditionalWeather: React.FC = () => {
     },
     list: [],
   });
+  const [weather, setWeather] = useState<Weather | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { search } = useLocation();
 
-  const getCityCoordinates = async () => {
-    const params = new URLSearchParams(search);
-    const lat = params.get('lat');
-    const lon = params.get('lon');
+  function isToday(date: Date) {
+    const today = new Date();
 
+    // 👇️ Today's date
+    if (
+      today.getFullYear() === date.getFullYear() &&
+      today.getMonth() === date.getMonth() &&
+      today.getDate() === date.getDate()
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const params = new URLSearchParams(search);
+  const lat = params.get('lat');
+  const lon = params.get('lon');
+
+  const getCityCoordinates = async () => {
     if (lat && lon) {
       try {
         setError('');
@@ -45,9 +65,8 @@ export const AdditionalWeather: React.FC = () => {
           +lon,
         );
         setCityForecast(cityWeather);
-        const utc = new Date().toJSON().slice(0, 10).replace(/-/g, '-');
-        const r = cityWeather?.list.filter(
-          (day) => day.dt_txt.split(' ')[0] === utc,
+        const r = cityWeather?.list.filter((day) =>
+          isToday(new Date(day.dt_txt)),
         );
 
         if (r) {
@@ -61,12 +80,27 @@ export const AdditionalWeather: React.FC = () => {
     }
   };
 
+  const getWeather = async () => {
+    if (lat && lon) {
+      try {
+        setWeather(null);
+        const cityWeather = await getWeatherByCityCoordinate(+lat, +lon);
+        setWeather(cityWeather);
+      } catch (e) {
+        setError('Something wrong with weather request');
+      }
+    }
+  };
+
   useEffect(() => {
     getCityCoordinates();
+    getWeather();
   }, []);
 
   const convertTimestampToString = (timestamp: number) => {
-    const dateFormatSunrise = new Date(timestamp);
+    const apiHotFix = `${timestamp}000`;
+
+    const dateFormatSunrise = new Date(+apiHotFix);
     return dateFormatSunrise.toTimeString().slice(0, 5);
   };
 
@@ -78,15 +112,13 @@ export const AdditionalWeather: React.FC = () => {
       }}
     >
       <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <ArrowBackIosIcon />
           <Typography>Back</Typography>
         </Box>
       </Link>
       <Card
         sx={{
-          width: 800,
-          height: 700,
           m: 'auto',
           borderRadius: '16px',
           border: 0.5,
@@ -100,7 +132,7 @@ export const AdditionalWeather: React.FC = () => {
       >
         {loading && <CircularProgress />}
 
-        {!loading && todayForecast.length !== 0 && (
+        {!loading && todayForecast.length !== 0 && weather !== null && (
           <>
             <Box
               sx={{
@@ -113,7 +145,7 @@ export const AdditionalWeather: React.FC = () => {
                 {cityForecast.city.name}, {cityForecast.city.country}
               </Typography>
               <Typography variant="h5" sx={{ mb: 4 }}>
-                {todayForecast[0].weather[0].description}
+                {weather?.weatherDescription?.description}
               </Typography>
             </Box>
 
@@ -138,10 +170,10 @@ export const AdditionalWeather: React.FC = () => {
                   borderColor: 'grey.500',
                 }}
                 alt="The house from the offer."
-                src={`http://openweathermap.org/img/wn/${todayForecast[0].weather[0].icon}@2x.png `}
+                src={`https://openweathermap.org/img/wn/${weather?.weatherDescription?.icon}@2x.png `}
               />
               <Typography variant="h4">{`${Math.round(
-                todayForecast[0].main.temp,
+                weather?.tempDescription.temp ?? 0.0,
               )}\u00b0 `}</Typography>
               <Box
                 sx={{
@@ -155,7 +187,7 @@ export const AdditionalWeather: React.FC = () => {
                   <Typography> &nbsp;Real felt &nbsp;</Typography>
                   <Typography sx={{ fontWeight: 'bold' }}>
                     {`${Math.round(
-                      cityForecast.list[0].main.feels_like,
+                      weather?.tempDescription.feels_like ?? 0.0,
                     )}\u00b0`}
                   </Typography>
                 </Box>
@@ -164,7 +196,7 @@ export const AdditionalWeather: React.FC = () => {
                   <OpacityIcon />
                   <Typography> &nbsp;Humidity &nbsp;</Typography>
                   <Typography sx={{ fontWeight: 'bold' }}>
-                    {cityForecast.list[0].main.humidity}%
+                    {weather?.tempDescription.humidity}%
                   </Typography>
                 </Box>
 
@@ -172,7 +204,7 @@ export const AdditionalWeather: React.FC = () => {
                   <WindPowerIcon />
                   <Typography> &nbsp;Wind&nbsp;</Typography>
                   <Typography sx={{ fontWeight: 'bold' }}>
-                    {cityForecast.list[0].wind.speed} km/h
+                    {weather?.wind.speed} km/h
                   </Typography>
                 </Box>
               </Box>
@@ -202,14 +234,14 @@ export const AdditionalWeather: React.FC = () => {
 
               <Box>
                 <DeviceThermostatIcon />
-                <Typography>High</Typography>
-                {`${Math.round(cityForecast.list[0].main.temp_max)}\u00b0`}
+                <Typography>Low</Typography>
+                {`${Math.round(weather?.tempDescription.temp_min)}\u00b0`}
               </Box>
 
               <Box>
                 <DeviceThermostatIcon />
-                <Typography>Low</Typography>
-                {`${Math.round(cityForecast.list[0].main.temp_min)}\u00b0`}
+                <Typography>High</Typography>
+                {`${Math.round(weather?.tempDescription.temp_max)}\u00b0`}
               </Box>
             </Box>
 
@@ -219,7 +251,14 @@ export const AdditionalWeather: React.FC = () => {
               </Divider>
             </Box>
 
-            <Box sx={{ display: 'flex' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               {todayForecast.map((forecast) => (
                 <ForecastCard key={forecast.dt_txt} forecast={forecast} />
               ))}
