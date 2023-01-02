@@ -1,5 +1,6 @@
 import { Weather } from '../types/weather';
 import { City } from '../types/city';
+import { ForecastResponse } from '../types/forecast_response';
 
 const BASE_URL = 'http://api.openweathermap.org';
 const APIkey = '9fb1281a90783019faf1809da0d6b7f8';
@@ -23,4 +24,15 @@ export const getWeatherByCityCoordinate = async (
   const json = await response.json();
 
   return Weather.fromJson(json);
+};
+
+export const getForecatsWeatherByCityCoordinate = async (
+  lat: number,
+  lon: number,
+): Promise<ForecastResponse> => {
+  const response = await fetch(
+    `${BASE_URL}/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${APIkey}&units=metric`,
+  );
+
+  return response.json();
 };

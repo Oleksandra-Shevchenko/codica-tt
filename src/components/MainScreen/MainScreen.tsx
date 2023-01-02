@@ -6,11 +6,22 @@ import { Button } from '@mui/material';
 import { CityCard } from '../CityCard';
 import { MuiDialog } from '../ModalWindow';
 import { City } from '../../types/city';
-import { getCitiesFromLocalStorage } from '../../repository/city_repository';
 
 export const MainScreen: React.FC = () => {
   const [cityList, setCityList] = useState<City[]>([]);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState('');
+
+  const citiesKey = 'citiesKey';
+  function getCitiesFromLocalStorage(): City[] {
+    const oldData = localStorage.getItem(citiesKey);
+
+    if (oldData == null) {
+      return [];
+    }
+
+    return JSON.parse(oldData);
+  }
 
   useEffect(() => {
     const cities = getCitiesFromLocalStorage();
@@ -18,8 +29,27 @@ export const MainScreen: React.FC = () => {
     setCityList(cities);
   }, []);
 
-  const OnCitesChanged = (cities: City[]) => {
-    setCityList(cities);
+  const OnSubmitCity = (city: City) => {
+    const cities = getCitiesFromLocalStorage();
+    if (cities.every((el) => el.name !== city.name)) {
+      cities.push(city);
+
+      localStorage.setItem(citiesKey, JSON.stringify(cities));
+      setOpen(false);
+
+      setCityList(cities);
+    } else {
+      setError('This city is already exist');
+    }
+  };
+
+  const handleRemover = (cityName: string) => {
+    const cities = getCitiesFromLocalStorage();
+    const filteredCityList = cities.filter((city) => city.name !== cityName);
+
+    localStorage.setItem(citiesKey, JSON.stringify(filteredCityList));
+
+    setCityList(filteredCityList);
   };
 
   return (
@@ -41,9 +71,11 @@ export const MainScreen: React.FC = () => {
           Add a new city
         </Button>
         <MuiDialog
-          onCitiesChanged={OnCitesChanged}
+          onSubmitCity={OnSubmitCity}
           setOpen={setOpen}
           open={open}
+          setError={setError}
+          error={error}
         />
       </Box>
       <Box
@@ -64,7 +96,8 @@ export const MainScreen: React.FC = () => {
           <CityCard
             key={city.name}
             city={city}
-            onCitiesChanged={OnCitesChanged}
+            handleRemover={handleRemover}
+            setError={setError}
           />
         ))}
       </Box>

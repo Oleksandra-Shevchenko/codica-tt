@@ -4,34 +4,64 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import React, { useState } from 'react';
+import { AsyncPaginate } from 'react-select-async-paginate';
 import { getCityByName } from '../../api/weather';
 import { City } from '../../types/city';
-import {
-  addCity,
-  validateIfWeCanAddCity,
-} from '../../repository/city_repository';
 
 type Props = {
-  onCitiesChanged: (cities: City[]) => void;
+  onSubmitCity: (city: City) => void;
   open: boolean;
   setOpen: (value: boolean) => void;
+  setError: (value: string) => void;
+  error: string;
 };
 export const MuiDialog: React.FC<Props> = ({
-  onCitiesChanged,
+  onSubmitCity,
   open,
   setOpen,
+  setError,
+  error,
 }) => {
   const [cityName, setCityName] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState(null);
 
+  const loadOptions = (inputValue: string) => {
+    if (inputValue === '') {
+      return {
+        options: [],
+      };
+    }
+    return getCityByName(inputValue)
+      .then((cities) => {
+        return {
+          options: cities.map((city) => {
+            return {
+              value: `${city.lat} ${city.lon}`,
+              label: `${city.name}`,
+            };
+          }),
+        };
+      })
+      .catch((e) => {
+        console.log(e);
+
+        return {
+          options: [],
+        };
+      });
+  };
+
+  const handleOnChange = (searchData: any) => {
+    setCityName(searchData.label);
+    setSearch(searchData);
+  };
   const onClick = async () => {
     try {
-      console.log(loading);
       setError('');
       setLoading(true);
 
@@ -41,18 +71,11 @@ export const MuiDialog: React.FC<Props> = ({
         setError(`There is no such city to load: ${cityName}`);
         return;
       }
-
       const firstCity = response[0];
 
-      const isValid = validateIfWeCanAddCity(firstCity);
-
-      if (isValid) {
-        const cityList = addCity(firstCity);
-
-        onCitiesChanged(cityList);
-      } else {
-        setError(`The city is already exist`);
-      }
+      onSubmitCity(firstCity);
+      setCityName('');
+      setSearch(null);
     } catch (e) {
       setError(`There is no such city to load: ${cityName}`);
     } finally {
@@ -66,24 +89,43 @@ export const MuiDialog: React.FC<Props> = ({
       onClose={() => setOpen(false)}
       aria-labelledby="dialog-title"
       aria-describedby="dialog-description"
+      fullWidth
+      maxWidth="sm"
+      sx={{ overflow: 'scroll' }}
     >
-      <DialogTitle id="dialog-title">Write the name of the city</DialogTitle>
-      <DialogContent sx={{ m: 'auto' }}>
-        <TextField
-          id="standard-basic"
-          value={cityName}
-          onChange={(e) => {
-            setCityName(e.target.value);
-          }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClick} sx={{ m: 'auto' }}>
-          Add
-        </Button>
-      </DialogActions>
-      {error.length > 0 && (
-        <Typography sx={{ m: 'auto', pb: 2, color: 'red' }}>{error}</Typography>
+      {loading && <CircularProgress />}
+      {!loading && (
+        <>
+          <DialogTitle id="dialog-title" sx={{ m: 'auto' }}>
+            Write the name of the city
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              '&.MuiDialogContent-root': {
+                minHeight: 210,
+                scrollBehavior: 'auto',
+              },
+            }}
+          >
+            <AsyncPaginate
+              placeholder="Search for city"
+              debounceTimeout={600}
+              value={search}
+              onChange={handleOnChange}
+              loadOptions={loadOptions}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onClick} sx={{ m: 'auto' }}>
+              Add
+            </Button>
+          </DialogActions>
+          {error.length > 0 && (
+            <Typography sx={{ m: 'auto', pb: 2, color: 'red' }}>
+              {error}
+            </Typography>
+          )}
+        </>
       )}
     </Dialog>
   );
