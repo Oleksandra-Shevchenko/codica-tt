@@ -77,7 +77,7 @@ export const AdditionalWeather: React.FC = () => {
         p: 7,
       }}
     >
-      <Link to="/home" style={{ textDecoration: 'none', color: 'black' }}>
+      <Link to="/" style={{ textDecoration: 'none', color: 'black' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ArrowBackIosIcon />
           <Typography>Back</Typography>

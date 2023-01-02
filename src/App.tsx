@@ -9,7 +9,7 @@ const App = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/home" element={<MainScreen />} />
+        <Route path="/" element={<MainScreen />} />
         <Route path="/allWeather" element={<AdditionalWeather />} />
       </Routes>
     </HashRouter>
