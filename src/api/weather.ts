@@ -2,7 +2,7 @@ import { Weather } from '../types/weather';
 import { City } from '../types/city';
 import { ForecastResponse } from '../types/forecast_response';
 
-const BASE_URL = 'http://api.openweathermap.org';
+const BASE_URL = 'https://api.openweathermap.org';
 const APIkey = '9fb1281a90783019faf1809da0d6b7f8';
 
 export const getCityByName = async (cityName: string): Promise<City[]> => {
