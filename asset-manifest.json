@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/my-app/static/css/main.abd64e84.css",
-    "main.js": "/my-app/static/js/main.79b97867.js",
-    "index.html": "/my-app/index.html",
-    "main.abd64e84.css.map": "/my-app/static/css/main.abd64e84.css.map",
-    "main.79b97867.js.map": "/my-app/static/js/main.79b97867.js.map"
+    "main.css": "/codica-tt/static/css/main.abd64e84.css",
+    "main.js": "/codica-tt/static/js/main.79b97867.js",
+    "index.html": "/codica-tt/index.html",
+    "main.abd64e84.css.map": "/codica-tt/static/css/main.abd64e84.css.map",
+    "main.79b97867.js.map": "/codica-tt/static/js/main.79b97867.js.map"
   },
   "entrypoints": [
     "static/css/main.abd64e84.css",
