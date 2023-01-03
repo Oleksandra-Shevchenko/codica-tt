@@ -65,12 +65,12 @@ export const AdditionalWeather: React.FC = () => {
           +lon,
         );
         setCityForecast(cityWeather);
-        const r = cityWeather?.list.filter((day) =>
+        const todayTime = cityWeather?.list.filter((day) =>
           isToday(new Date(day.dt_txt)),
         );
 
-        if (r) {
-          setTodayForecast(r);
+        if (todayTime) {
+          setTodayForecast(todayTime);
         }
       } catch (e) {
         setError('There is no such city to load');
